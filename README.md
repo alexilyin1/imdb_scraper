@@ -46,6 +46,26 @@ After completing this model, I decided to deploy it as an "application", to allo
 
 ![alt_text](images/sci-fi_pred.PNG)
 
-![alt_text](images/war_wrong_pred.PNG)
+![alt_text](images/war_wrong-pred.PNG)
 
 ![alt_text](images/western_wrong_pred.PNG)
+
+While the first two proved to be successful predictions, the third and fourth predictions were incorrect. 
+
+
+## Insights
+While there is analytics currently being used in the movie industry, it is not an industry that comes to mind when you think of industries that have adopted analytics. For this reason, there is plenty of room for both deep learning and NLP in understand moviegoers/customers. Hypothetically, the producers of a movie could use topic modeling to understand what their customers talk about the most in their reviews, and target those topics. Through an image classification, the producers could test their poster to see if it would reach the intended target audience. 
+
+
+## Challenges
+ 1. Lack of data
+
+With this data having been collected through web scraping, it took quite a while to collect all the data used in this project. While it did provide us with some interesting insights, there was definitely room for at least marginal improvements with access to more data. The CNN was running into problems beating around ~45% accuracy until I added some Keras callbacks, specifically ReduceLRonPlateua, which reduces the model's learning rate after seeing no improvements in a metrics, and early stopping, which stops a model's learning process after seeing no improvements, to prevent overfitting (ideally, you would set the target metric of both of these models to validation accuracy, as the model would continue to see improvements in training accuracy as it overfit the training data). 
+
+ 2. Missing metrics
+
+One thing that could have improved the quality of the topic modeling was the integration of sentiment. As mentioned, if a hypothetical movie producer would use this model, the combination of sentiment AND topic modeling could help them see which topics to avoid and which to target. 
+
+ 3. Size of weights file
+
+As mentioned above, Heroku was not too pleased about an app running on over 300 MB of data, and this proves to be a problem when actually using the app upon deployment. It takes a considerable amount of time to run the model compared to basically instantaneous output when running on a local machine. It is unfortunate that CNNs have such large weights files, but understandable. 
