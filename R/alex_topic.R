@@ -13,14 +13,18 @@ library(doParallel)
 a <- read_csv('./a_reviews.csv') %>%
   select(-c(X1))
 
-# s <- read_csv('./s_reviews.csv') %>%
-  # select(-c(X1))
+s <- read_csv('./s_reviews.csv') %>%
+  select(-c(X1))
 
-# wa <- read_csv('../wa_reviews.csv') %>%
-  # select(-c(X1))
+wa <- read_csv('./wa_reviews.csv') %>%
+  select(-c(X1))
 
-# we <- read_csv('../full_reviews.rds') %>%
-  # select(-c(X1))
+we <- read_csv('./we_reviews.csv') %>%
+  select(-c(X1))
+
+
+#*********************************************************************************************
+## Topic models for 'animation' genre
 
 animation_tidy <- a %>%
   select(V1, V2) %>%
@@ -55,9 +59,9 @@ LDA_animation <- LDA(dtm_a, k = 15, method = 'Gibbs',
                                     burnin=10000, seed = 1234))
 
   
-topics <- tidy(LDA_animation, matrix = 'beta')
+topics_a <- tidy(LDA_animation, matrix = 'beta')
 
-top_topics <- topics %>%
+top_topics_a <- topics_a %>%
   group_by(topic) %>%
   top_n(10, beta) %>%
   ungroup() %>%
@@ -75,3 +79,177 @@ lda_a_json <- createJSON(
 )
 
 serVis(lda_a_json)
+
+
+#*********************************************************************************************
+## Topic models for Western movies
+
+western_tidy <- we %>%
+  select(V1, V2) %>%
+  unnest_tokens(word, V2) %>%
+  anti_join(stop_words)
+
+western_tidy <- western_tidy %>%
+  mutate(lemma = lemmatize_words(word)) 
+
+wordCount <- western_tidy %>%
+  group_by(word) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count))
+
+wordCount <- western_tidy %>%
+  group_by(lemma) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>%
+  filter(count > 20)
+
+final_words <- western_tidy %>%
+  filter(lemma %in% wordCount$lemma) %>%
+  select(V1, lemma)
+
+dtm_w <- western_tidy %>%
+  count(V1, lemma) %>%
+  cast_dtm(V1, lemma, n)
+
+## LDA model
+LDA_western <- LDA(dtm_w, k = 15, method = 'Gibbs',
+                   control = list(alpha = 1/10, iter=50, 
+                                  burnin=10000, seed = 1234))
+
+
+topics_w <- tidy(LDA_western, matrix = 'beta')
+
+top_topics_w <- topics_w %>%
+  group_by(topic) %>%
+  top_n(10, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta) %>%
+  ungroup() %>%
+  mutate(x = n():1)
+
+lda_w_post <- posterior(LDA_western)
+lda_w_json <- createJSON(
+  phi = lda_w_post[['terms']],
+  theta = lda_w_post[['topics']],
+  vocab = colnames(lda_w_post[['terms']]),
+  doc.length = slam::row_sums(LDA_western@wordassignments, na.rm=TRUE),
+  term.frequency = slam::col_sums(LDA_western@wordassignments, na.rm=TRUE)
+)
+
+serVis(lda_w_json)
+  
+
+#*********************************************************************************************
+## Topic models for War movies
+
+war_tidy <- wa %>%
+  select(V1, V2) %>%
+  unnest_tokens(word, V2) %>%
+  anti_join(stop_words)
+
+war_tidy <- war_tidy %>%
+  mutate(lemma = lemmatize_words(word)) 
+
+wordCount <- war_tidy %>%
+  group_by(word) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count))
+
+wordCount <- war_tidy %>%
+  group_by(lemma) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>%
+  filter(count > 20)
+
+final_words <- war_tidy %>%
+  filter(lemma %in% wordCount$lemma) %>%
+  select(V1, lemma)
+
+dtm_wa <- war_tidy %>%
+  count(V1, lemma) %>%
+  cast_dtm(V1, lemma, n)
+
+## LDA model
+LDA_war <- LDA(dtm_wa, k = 15, method = 'Gibbs',
+                   control = list(alpha = 1/10, iter=50, 
+                                  burnin=10000, seed = 1234))
+
+
+topics_wa <- tidy(LDA_war, matrix = 'beta')
+
+top_topics_wa <- topics_wa %>%
+  group_by(topic) %>%
+  top_n(10, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta) %>%
+  ungroup() %>%
+  mutate(x = n():1)
+
+lda_wa_post <- posterior(LDA_war)
+lda_wa_json <- createJSON(
+  phi = lda_wa_post[['terms']],
+  theta = lda_wa_post[['topics']],
+  vocab = colnames(lda_wa_post[['terms']]),
+  doc.length = slam::row_sums(LDA_war@wordassignments, na.rm=TRUE),
+  term.frequency = slam::col_sums(LDA_war@wordassignments, na.rm=TRUE)
+)
+
+serVis(lda_wa_json)
+
+
+#*********************************************************************************************
+## Topic models for Sci-Fi movies
+
+sci_tidy <- s %>%
+  select(V1, V2) %>%
+  unnest_tokens(word, V2) %>%
+  anti_join(stop_words)
+
+sci_tidy <- sci_tidy %>%
+  mutate(lemma = lemmatize_words(word)) 
+
+wordCount <- sci_tidy %>%
+  group_by(word) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count))
+
+wordCount <- sci_tidy %>%
+  group_by(lemma) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>%
+  filter(count > 20)
+
+final_words <- sci_tidy %>%
+  filter(lemma %in% wordCount$lemma) %>%
+  select(V1, lemma)
+
+dtm_sci <- sci_tidy %>%
+  count(V1, lemma) %>%
+  cast_dtm(V1, lemma, n)
+
+## LDA model
+LDA_sci <- LDA(dtm_sci, k = 15, method = 'Gibbs',
+               control = list(alpha = 1/10, iter=50, 
+                              burnin=10000, seed = 1234))
+
+
+topics_sci <- tidy(LDA_sci, matrix = 'beta')
+
+top_topics_sci <- topics_sci %>%
+  group_by(topic) %>%
+  top_n(10, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta) %>%
+  ungroup() %>%
+  mutate(x = n():1)
+
+lda_s_post <- posterior(LDA_sci)
+lda_s_json <- createJSON(
+  phi = lda_s_post[['terms']],
+  theta = lda_s_post[['topics']],
+  vocab = colnames(lda_s_post[['terms']]),
+  doc.length = slam::row_sums(LDA_sci@wordassignments, na.rm=TRUE),
+  term.frequency = slam::col_sums(LDA_sci@wordassignments, na.rm=TRUE)
+)
+
+serVis(lda_s_json)
