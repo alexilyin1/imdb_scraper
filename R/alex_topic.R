@@ -61,6 +61,7 @@ LDA_animation <- LDA(dtm_a, k = 15, method = 'Gibbs',
   
 topics_a <- tidy(LDA_animation, matrix = 'beta')
 
+# Topic Visualizations
 top_topics_a <- topics_a %>%
   group_by(topic) %>%
   top_n(10, beta) %>%
@@ -68,6 +69,12 @@ top_topics_a <- topics_a %>%
   arrange(topic, -beta) %>%
   ungroup() %>%
   mutate(x = n():1)
+
+top_topics_a %>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(term, beta, fill=factor(topic))) +
+  geom_col(show.legend=FALSE) + facet_wrap(~topic, scales='free') +
+  coord_flip() + scale_x_reordered()
 
 lda_a_post <- posterior(LDA_animation)
 lda_a_json <- createJSON(
@@ -119,6 +126,7 @@ LDA_western <- LDA(dtm_w, k = 15, method = 'Gibbs',
 
 topics_w <- tidy(LDA_western, matrix = 'beta')
 
+# Topic visualizations
 top_topics_w <- topics_w %>%
   group_by(topic) %>%
   top_n(10, beta) %>%
@@ -126,6 +134,12 @@ top_topics_w <- topics_w %>%
   arrange(topic, -beta) %>%
   ungroup() %>%
   mutate(x = n():1)
+
+top_topics_w %>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(term, beta, fill=factor(topic))) +
+  geom_col(show.legend=FALSE) + facet_wrap(~topic, scales='free') +
+  coord_flip() + scale_x_reordered()
 
 lda_w_post <- posterior(LDA_western)
 lda_w_json <- createJSON(
@@ -177,6 +191,7 @@ LDA_war <- LDA(dtm_wa, k = 15, method = 'Gibbs',
 
 topics_wa <- tidy(LDA_war, matrix = 'beta')
 
+# Topic Visualizations
 top_topics_wa <- topics_wa %>%
   group_by(topic) %>%
   top_n(10, beta) %>%
@@ -184,6 +199,12 @@ top_topics_wa <- topics_wa %>%
   arrange(topic, -beta) %>%
   ungroup() %>%
   mutate(x = n():1)
+
+top_topics_wa %>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(term, beta, fill=factor(topic))) +
+  geom_col(show.legend=FALSE) + facet_wrap(~topic, scales='free') +
+  coord_flip() + scale_x_reordered()
 
 lda_wa_post <- posterior(LDA_war)
 lda_wa_json <- createJSON(
@@ -235,6 +256,7 @@ LDA_sci <- LDA(dtm_sci, k = 15, method = 'Gibbs',
 
 topics_sci <- tidy(LDA_sci, matrix = 'beta')
 
+# Topic visualizations 
 top_topics_sci <- topics_sci %>%
   group_by(topic) %>%
   top_n(10, beta) %>%
@@ -242,6 +264,12 @@ top_topics_sci <- topics_sci %>%
   arrange(topic, -beta) %>%
   ungroup() %>%
   mutate(x = n():1)
+
+top_topics_sci %>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(term, beta, fill=factor(topic))) +
+  geom_col(show.legend=FALSE) + facet_wrap(~topic, scales='free') +
+  coord_flip() + scale_x_reordered()
 
 lda_s_post <- posterior(LDA_sci)
 lda_s_json <- createJSON(
@@ -253,3 +281,34 @@ lda_s_json <- createJSON(
 )
 
 serVis(lda_s_json)
+
+
+## Gamma probability 
+gamma_a <- tidy(LDA_animation, matrix='gamma')
+gamma_a
+
+a %>%
+  filter(V1==1049413)
+
+
+## Sentiment analysis
+install.packages('sentimentr')
+library(sentimentr)
+
+sentences <- get_sentences(a$V2)
+a.sentiment <- sentiment_by(sentences)
+
+a$element_id <- seq(1, nrow(a))
+
+animation_sentiments <- left_join(a, a.sentiment, by=c('element_id'))
+
+ggplot(animation_sentiments, aes(ave_sentiment)) + geom_histogram()
+
+animation_sentiments$V1 <- as.character(animation_sentiments$V1)
+animation_sentiments <- left_join(animation_sentiments, gamma_a, by=c('V1'='document'))
+
+genres_sentiment <- animation_sentiments %>%
+  group_by(genre) %>%
+  summarise(avg_sentiment = mean(ave_sentiment))
+
+ggplot(top_topics, aes(topic)) + geom_histogram()
