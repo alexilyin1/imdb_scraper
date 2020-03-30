@@ -15,3 +15,9 @@ While I have completed topic models in Python, this was my first time completing
 [War](https://htmlpreview.github.io/?https://github.com/alexilyin1/imdb_scraper/blob/master/LDAvis_html/LDAvis_war.html)
 
 [Western](https://htmlpreview.github.io/?https://github.com/alexilyin1/imdb_scraper/blob/master/LDAvis_html/LDAvis_western.html)
+
+After producing these visualizations courtesy of the package LDAvis, I used some ggplot visualizations to take a deeper look at the composition of the different topics. Due to the time it takes to compute topic models, I settled on 15 topics with 50 iterations. Within the LDA function are two parameters, gamma and beta. Gamma allows us to look at the topic distribution among documents, while beta allows us to look at the word distributions among topics. By extracting the beta coefficients from the computed topic model, we can create plots to examine the "top" words in each topic by their beta score. For example, here are the plots for animation and western topic models:
+
+![alt_text](images/animation_bars.PNG)
+
+![alt_text](images/western_bars.PNG)
